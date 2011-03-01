@@ -17,21 +17,21 @@ fi
 
 # Subversion
 which svn >/dev/null
-if [ "$?" = "0" ]; then
-  (svn info ${WD} >/dev/null 2>&1) && SVN="TRUE"
-  if [ "x${SVN}" = "xTRUE" ]; then
+if [ x"$?" = x0 ]; then
+  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
+  if [ x"${SVN}" = xTRUE ]; then
     [ ! "${REV}" ] && REV=`svnversion "${WD}" | sed "s/:/-/g"`
   fi
 fi
 
 # Git
 which git >/dev/null
-if [ "$?" = "0" ]; then
-  (cd "${WD}"; git status --porcelain >/dev/null 2>&1) && GIT="TRUE"
-  if [ "x${GIT}" = "xTRUE" ]; then
-    HASH=` (cd "${WD}"; git describe --all --long) | \
+if [ x"$?" = x0 ]; then
+  (cd "${WD}" && git status --porcelain >/dev/null 2>&1) && GIT=TRUE
+  if [ x"${GIT}" = xTRUE ]; then
+    HASH=` (cd "${WD}" && git describe --all --long) | \
             sed "s/^.*-g\([0-9a-z]\+\)$/\1/g"`
-    IFMOD=`(cd "${WD}"; git status) | \
+    IFMOD=`(cd "${WD}" && git status) | \
             grep "modified:\|added:\|deleted:" -q && \
             echo -n "M"`
     [ ! "${REV}" ] && REV=${HASH}${IFMOD}
@@ -40,13 +40,13 @@ fi
 
 # Mercurial
 which hg >/dev/null
-if [ "$?" = "0" ]; then
-  (hg status ${WD} >/dev/null 2>&1) && HG="TRUE"
-  if [ "x${HG}" = "xTRUE" ]; then
+if [ x"$?" = x0 ]; then
+  (hg status "${WD}" >/dev/null 2>&1) && HG=TRUE
+  if [ x"${HG}" = xTRUE ]; then
     [ ! "${REV}" ] && REV=`hg identify --id "${WD}" | sed "s/+/M/g"`
   fi
 fi
 
-[ ! "${REV}" ] && REV="unknown"
+[ ! "${REV}" ] && REV=unknown
 
 echo -n "${REV}"
