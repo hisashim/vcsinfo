@@ -17,7 +17,7 @@ which svn >/dev/null
 if [ x"$?" = x0 ]; then
   (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
   if [ x"${SVN}" = xTRUE ]; then
-    (cd "${WD}"; svn log -rHEAD:0 -v)
+    (cd "${WD}"; svn log -rBASE:0 -v)
   fi
 fi
 
