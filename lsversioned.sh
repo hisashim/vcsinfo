@@ -19,7 +19,7 @@ if [ x"$?" = x0 ]; then
   if [ x"${SVN}" = xTRUE ]; then
     [ ! "${FILES}" ] && \
       FILES=`cd "${WD}" && svn status --non-interactive -v . \
-             | grep -v '^?' | awk '{ print \$4}' \
+             | grep -v '^?' | cut -c10- | awk '{ print \$4 }' \
              | xargs -n 1 -I{} find {} -maxdepth 0 ! -type d | sort`
   fi
 fi
