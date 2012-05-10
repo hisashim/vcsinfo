@@ -4,7 +4,7 @@
 # License: Public Domain
 #
 # Usage:
-#   revstr.sh [WORKING_DIR]
+#   vcsrev.sh [WORKING_DIR]
 #   #=> Git:        a1b2c3d, a1b2c3dM, etc.
 #   #=> Mercurial:  a1b2c3d, a1b2c3dM, etc.
 #   #=> Bazaar:     123, 123M, etc.

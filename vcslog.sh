@@ -4,7 +4,7 @@
 # License: Public Domain
 #
 # Usage:
-#   changelog.sh [WORKING_DIR] > ChangeLog
+#   vcslog.sh [WORKING_DIR] > ChangeLog
 
 if [ "$1" ]; then
   WD="$1"

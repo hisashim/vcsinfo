@@ -4,7 +4,7 @@
 # License: Public Domain
 #
 # Usage:
-#   lsversioned.sh [WORKING_DIR]
+#   vcsls.sh [WORKING_DIR]
 
 if [ "$1" ]; then
   WD="$1"
