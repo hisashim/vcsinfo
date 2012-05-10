@@ -5,24 +5,15 @@
 #
 # Usage:
 #   revstr.sh [WORKING_DIR]
-#   #=> Subversion: 123, 123M, etc.
 #   #=> Git:        a1b2c3d, a1b2c3dM, etc.
 #   #=> Mercurial:  a1b2c3d, a1b2c3dM, etc.
 #   #=> Bazaar:     123, 123M, etc.
+#   #=> Subversion: 123, 123M, etc.
 
 if [ "$1" ]; then
   WD="$1"
 else
   WD="."
-fi
-
-# Subversion
-which svn >/dev/null
-if [ x"$?" = x0 ]; then
-  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
-  if [ x"${SVN}" = xTRUE ]; then
-    [ ! "${REV}" ] && REV=`svnversion "${WD}" | sed "s/:/-/g"`
-  fi
 fi
 
 # Git
@@ -57,6 +48,15 @@ if [ x"$?" = x0 ]; then
     IFMOD=`bzr status --versioned "${WD}" \
            | grep "^[a-z]*:" -q && echo -n "M"`
     [ ! "${REV}" ] && REV=${REVNO}${IFMOD}
+  fi
+fi
+
+# Subversion
+which svn >/dev/null
+if [ x"$?" = x0 ]; then
+  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
+  if [ x"${SVN}" = xTRUE ]; then
+    [ ! "${REV}" ] && REV=`svnversion "${WD}" | sed "s/:/-/g"`
   fi
 fi
 

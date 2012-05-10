@@ -12,18 +12,6 @@ else
   WD="."
 fi
 
-# Subversion
-which svn >/dev/null
-if [ x"$?" = x0 ]; then
-  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
-  if [ x"${SVN}" = xTRUE ]; then
-    [ ! "${FILES}" ] && \
-      FILES=`cd "${WD}" && svn status --non-interactive -v . \
-             | grep -v '^?' | cut -c10- | awk '{ print \$4 }' \
-             | xargs -n 1 -I{} find {} -maxdepth 0 ! -type d | sort`
-  fi
-fi
-
 # Git
 which git >/dev/null
 if [ x"$?" = x0 ]; then
@@ -52,6 +40,18 @@ if [ x"$?" = x0 ]; then
       FILES=`cd "${WD}" \
              && (bzr ls --versioned --recursive --kind file; \
                  bzr ls --versioned --recursive --kind symlink) | sort`
+  fi
+fi
+
+# Subversion
+which svn >/dev/null
+if [ x"$?" = x0 ]; then
+  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
+  if [ x"${SVN}" = xTRUE ]; then
+    [ ! "${FILES}" ] && \
+      FILES=`cd "${WD}" && svn status --non-interactive -v . \
+             | grep -v '^?' | cut -c10- | awk '{ print \$4 }' \
+             | xargs -n 1 -I{} find {} -maxdepth 0 ! -type d | sort`
   fi
 fi
 

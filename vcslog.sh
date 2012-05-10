@@ -12,15 +12,6 @@ else
   WD="."
 fi
 
-# Subversion
-which svn >/dev/null
-if [ x"$?" = x0 ]; then
-  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
-  if [ x"${SVN}" = xTRUE ]; then
-    (cd "${WD}"; svn log -rBASE:0 -v)
-  fi
-fi
-
 # Git
 which git >/dev/null
 if [ x"$?" = x0 ]; then
@@ -45,5 +36,14 @@ if [ x"$?" = x0 ]; then
   (bzr status "${WD}" >/dev/null 2>&1) && BZR=TRUE
   if [ x"${BZR}" = xTRUE ]; then
     (cd "${WD}"; bzr log --gnu-changelog)
+  fi
+fi
+
+# Subversion
+which svn >/dev/null
+if [ x"$?" = x0 ]; then
+  (svn info "${WD}" >/dev/null 2>&1) && SVN=TRUE
+  if [ x"${SVN}" = xTRUE ]; then
+    (cd "${WD}"; svn log -rBASE:0 -v)
   fi
 fi
