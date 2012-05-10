@@ -8,6 +8,7 @@
 #   #=> Subversion: 123, 123M, etc.
 #   #=> Git:        a1b2c3d, a1b2c3dM, etc.
 #   #=> Mercurial:  a1b2c3d, a1b2c3dM, etc.
+#   #=> Bazaar:     123, 123M, etc.
 
 if [ "$1" ]; then
   WD="$1"
@@ -44,6 +45,18 @@ if [ x"$?" = x0 ]; then
   (hg status "${WD}" >/dev/null 2>&1) && HG=TRUE
   if [ x"${HG}" = xTRUE ]; then
     [ ! "${REV}" ] && REV=`hg identify --id "${WD}" | sed "s/+/M/g"`
+  fi
+fi
+
+# Bazaar
+which bzr >/dev/null
+if [ x"$?" = x0 ]; then
+  (bzr status "${WD}" >/dev/null 2>&1) && BZR=TRUE
+  if [ x"${BZR}" = xTRUE ]; then
+    REVNO=`bzr revno "${WD}"`
+    IFMOD=`bzr status --versioned "${WD}" \
+           | grep "^[a-z]*:" -q && echo -n "M"`
+    [ ! "${REV}" ] && REV=${REVNO}${IFMOD}
   fi
 fi
 

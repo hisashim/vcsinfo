@@ -43,4 +43,16 @@ if [ x"$?" = x0 ]; then
   fi
 fi
 
+# Bazaar
+which bzr >/dev/null
+if [ x"$?" = x0 ]; then
+  (bzr status "${WD}" >/dev/null 2>&1) && BZR=TRUE
+  if [ x"${BZR}" = xTRUE ]; then
+    [ ! "${FILES}" ] && \
+      FILES=`cd "${WD}" \
+             && (bzr ls --versioned --recursive --kind file; \
+                 bzr ls --versioned --recursive --kind symlink) | sort`
+  fi
+fi
+
 echo -n "${FILES}"

@@ -38,3 +38,12 @@ if [ x"$?" = x0 ]; then
     (cd "${WD}"; hg log --rev tip:0)
   fi
 fi
+
+# Bazaar
+which bzr >/dev/null
+if [ x"$?" = x0 ]; then
+  (bzr status "${WD}" >/dev/null 2>&1) && BZR=TRUE
+  if [ x"${BZR}" = xTRUE ]; then
+    (cd "${WD}"; bzr log --gnu-changelog)
+  fi
+fi
