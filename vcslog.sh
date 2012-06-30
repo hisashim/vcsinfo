@@ -46,7 +46,7 @@ if [ x"${SVN}" = xTRUE ]; then
   (svn info "${WD}" >/dev/null 2>&1) && SVN_WD=TRUE
   if [ x"${SVN_WD}" = xTRUE ]; then
     if [ x"${SVN2CL}" = xTRUE ]; then
-      (cd "${WD}"; svn2cl --stdout)
+      (cd "${WD}"; svn2cl --stdout --include-rev)
     else
       (cd "${WD}"; svn log -rBASE:0 -v)
     fi
