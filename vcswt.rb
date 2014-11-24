@@ -81,6 +81,27 @@ module VCSWTUtils
       end
     end
 
+    def branch(d)
+      ds = d.shellescape
+      case guess_vcs(d)
+      when :git
+        puts `cd #{ds}; git rev-parse --abbrev-ref HEAD`
+      when :hg
+        named_branch = `cd #{ds}; hg branch`.chomp
+        bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
+          gsub(/^ \* ([^ ]+?) +?[^ ]*?$/, '\1').chomp
+        puts [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
+      when :bzr
+        nick = `cd #{ds}; bzr heads | grep '^ *branch nick: '`.
+            gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
+        puts nick
+      when :svn
+        puts `svn info | grep '^URL' | xargs -I{} basename {}`
+      else
+        nil
+      end
+    end
+
     def rev(d)
       ds = d.shellescape
       case guess_vcs(d)
@@ -119,6 +140,7 @@ if $0 == __FILE__
   ARGV.options {|o|
     o.def_option('--log', 'display log')            {|s| clo[:cmd] = :log}
     o.def_option('--ls',  'display versioned files'){|s| clo[:cmd] = :ls}
+    o.def_option('--branch', 'display branch')      {|s| clo[:cmd] = :branch}
     o.def_option('--rev', 'display revision')       {|s| clo[:cmd] = :rev}
     o.def_option('--help', 'show this message')     {|s| clo[:cmd] = :help}
     o.parse!
