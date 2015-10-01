@@ -40,12 +40,14 @@ fi
 
 # Bazaar
 which bzr >/dev/null; [ x"$?" = x0 ] && BZR=TRUE
-bzr heads --help >/dev/null; [ x"$?" = x0 ] && BZR_HEADS=TRUE
-if [ x"${BZR}" = xTRUE ] && [ x"${BZR_HEADS}" = xTRUE ] ; then
-  (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
-  if [ x"${BZR_WD}" = xTRUE ]; then
-    [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; bzr heads \
-        | grep '^ *branch nick: ' | sed 's/^ *branch nick: \(.*\)$/\1/g')`
+if [ x"${BZR}" = xTRUE ]; then
+  bzr heads --help >/dev/null; [ x"$?" = x0 ] && BZR_HEADS=TRUE
+  if [ x"${BZR_HEADS}" = xTRUE ] ; then
+    (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
+    if [ x"${BZR_WD}" = xTRUE ]; then
+      [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; bzr heads \
+          | grep '^ *branch nick: ' | sed 's/^ *branch nick: \(.*\)$/\1/g')`
+    fi
   fi
 fi
 
