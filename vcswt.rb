@@ -16,16 +16,17 @@ module VCSWTUtils
   VERSION = "0.0.1"
   class App
     def cmd?(cmd)
-      system("which #{cmd.shellescape} >/dev/null")
+      `which #{cmd.shellescape} >/dev/null`
+      $?
     end
 
     def wt?(vcs, d)
       ds = d.shellescape
       case vcs
-      when 'git' then system("cd #{ds} && git status --porcelain >/dev/null 2>&1")
-      when 'hg'  then system("hg status #{ds} >/dev/null 2>&1")
-      when 'bzr' then system("bzr status #{ds} >/dev/null 2>&1")
-      when 'svn' then system("svn info #{ds} >/dev/null 2>&1")
+      when 'git' then `cd #{ds} && git status --porcelain >/dev/null 2>&1`
+      when 'hg'  then `hg status #{ds} >/dev/null 2>&1`
+      when 'bzr' then `bzr status #{ds} >/dev/null 2>&1`
+      when 'svn' then `svn info #{ds} >/dev/null 2>&1`
       else
         false
       end
@@ -45,13 +46,13 @@ module VCSWTUtils
     def log(d)
       ds = d.shellescape
       case guess_vcs(d)
-      when :git then system("cd #{ds}; git --no-pager log" +
-                            " --format=\"%ai %aN %n%n%x09* %s%n\"")
-      when :hg  then system("cd #{ds}; hg log --style changelog")
-      when :bzr then system("cd #{ds}; bzr log --gnu-changelog")
+      when :git then `cd #{ds}; git --no-pager log \
+                      --format=\"%ai %aN %n%n%x09* %s%n\"`
+      when :hg  then `cd #{ds}; hg log --style changelog`
+      when :bzr then `cd #{ds}; bzr log --gnu-changelog`
       when :svn then
-        if cmd? 'svn2cl' then system("cd #{ds}; svn2cl --stdout --include-rev")
-        else                  system("cd #{ds}; svn log -rBASE:0 -v")
+        if cmd? 'svn2cl' then `cd #{ds}; svn2cl --stdout --include-rev`
+        else                  `cd #{ds}; svn log -rBASE:0 -v`
         end
       else
         nil
@@ -62,20 +63,20 @@ module VCSWTUtils
       ds = d.shellescape
       case guess_vcs(d)
       when :git
-        system("cd #{ds} && git ls-files | sort")
+        `cd #{ds} && git ls-files | sort`
       when :hg
-        system("cd #{ds} && hg status --all" +
-               " | grep -v '^?' | cut -c3- | sort")
+        `cd #{ds} && hg status --all \
+         | grep -v '^?' | cut -c3- | sort`
       when :bzr
-        system("cd #{ds} &&" +
-               " (bzr ls --versioned --recursive --kind file; " +
-               "  bzr ls --versioned --recursive --kind symlink)" +
-               " | sort")
+        `cd #{ds} && \
+         (bzr ls --versioned --recursive --kind file; \
+          bzr ls --versioned --recursive --kind symlink) \
+         | sort`
       when :svn
-        system("cd #{ds} && svn status --non-interactive -v ." +
-               " | grep -v '^?' | cut -c10- | awk '{ print \$4 }' " +
-               " | xargs -n 1 -I{} find {} -maxdepth 0 ! -type d" +
-               " | sort")
+        `cd #{ds} && svn status --non-interactive -v . \
+         | grep -v '^?' | cut -c10- | awk '{ print \$4 }' \
+         | xargs -n 1 -I{} find {} -maxdepth 0 ! -type d \
+         | sort`
       else
         nil
       end
@@ -85,18 +86,18 @@ module VCSWTUtils
       ds = d.shellescape
       case guess_vcs(d)
       when :git
-        puts `cd #{ds}; git rev-parse --abbrev-ref HEAD`
+        `cd #{ds}; git rev-parse --abbrev-ref HEAD`
       when :hg
         named_branch = `cd #{ds}; hg branch`.chomp
         bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
           gsub(/^ \* ([^ ]+?) +?[^ ]*?$/, '\1').chomp
-        puts [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
+        [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
       when :bzr
         nick = `cd #{ds}; bzr heads | grep '^ *branch nick: '`.
             gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
-        puts nick
+        nick
       when :svn
-        puts `svn info | grep '^URL' | xargs -I{} basename {}`
+        `svn info | grep '^URL' | xargs -I{} basename {}`
       else
         nil
       end
@@ -110,22 +111,22 @@ module VCSWTUtils
                  chomp.gsub(/\A.*?-g([0-9a-z]+).*\Z/, '\1')
         ifmod  = `(cd "${WD}" && git status)`.
                  scan(/modified:|added:|deleted:/).empty? ? '' : 'M'
-        puts(rev_id + ifmod)
+        rev_id + ifmod
       when :hg
-        puts(`hg identify --id #{ds}`.gsub(/\+/, 'M'))
+        `hg identify --id #{ds}`.gsub(/\+/, 'M')
       when :bzr
         rev_id = `bzr revno #{ds}`.chomp
         ifmod  = `bzr status --versioned #{ds}`.scan(/^\w+:/).empty? ? '' : 'M'
-        puts(rev_id + ifmod)
+        rev_id + ifmod
       when :svn
-        puts(`svnversion #{ds}`.gsub(/:/, '-'))
+        `svnversion #{ds}`.gsub(/:/, '-')
       else
         nil
       end
     end
 
     def help(d)
-      puts ARGV.options; exit(0)
+      ARGV.options; exit(0)
     end
   end
 end
@@ -146,5 +147,7 @@ if $0 == __FILE__
     o.parse!
   } or exit(1)
   config = default_config.update(clo)
-  VCSWTUtils::App.new.send(config[:cmd], (arg = ARGV.first || '.'))
+  result = VCSWTUtils::App.new.send(config[:cmd], (arg = ARGV.first || '.'))
+  print result.chomp
+  print "\n" if $stdout.tty?
 end
