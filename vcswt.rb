@@ -126,7 +126,7 @@ module VCSWTUtils
     end
 
     def help(d)
-      ARGV.options; exit(0)
+      ARGV.options.to_s
     end
   end
 end
@@ -147,7 +147,8 @@ if $0 == __FILE__
     o.parse!
   } or exit(1)
   config = default_config.update(clo)
-  result = VCSWTUtils::App.new.send(config[:cmd], (arg = ARGV.first || '.'))
+  vcswtutil = VCSWTUtils::App.new
+  result = vcswtutil.send(config[:cmd], (arg = ARGV.first || '.'))
   print result.chomp
   print "\n" if $stdout.tty?
 end
