@@ -1,18 +1,18 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 #
-# Miscllaneous utilities to get information inside VCS working tree
+# VCS working tree inspector
 # Copyright 2012 Hisashi Morita
 # License: Public Domain
 #
 # Usage:
-#   vcswt.rb --log [WORKING_DIR] > ChangeLog
-#   vcswt.rb --ls  [WORKING_DIR] > MANIFEST
-#   vcswt.rb --rev [WORKING_DIR] #=> 123, 123M, etc
+#   vcsinfo.rb --log [WORKING_DIR] > ChangeLog
+#   vcsinfo.rb --ls  [WORKING_DIR] > MANIFEST
+#   vcsinfo.rb --rev [WORKING_DIR] #=> 123, 123M, etc
 
 require 'shellwords'
 
-module VCSWTUtils
+module VCSInfo
   VERSION = "0.0.1"
   class App
     def cmd?(cmd)
@@ -147,8 +147,8 @@ if $0 == __FILE__
     o.parse!
   } or exit(1)
   config = default_config.update(clo)
-  vcswtutil = VCSWTUtils::App.new
-  result = vcswtutil.send(config[:cmd], (arg = ARGV.first || '.'))
+  vcsinfo = VCSInfo::App.new
+  result = vcsinfo.send(config[:cmd], (arg = ARGV.first || '.'))
   print result.chomp
   print "\n" if $stdout.tty?
 end
