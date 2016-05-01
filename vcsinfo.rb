@@ -12,7 +12,7 @@ require 'shellwords'
 
 module VCSInfo
   VERSION = "0.0.1"
-  class App
+  class << self
     def cmd?(cmd)
       `which #{cmd.shellescape} >/dev/null`
       $?
@@ -177,9 +177,8 @@ if $0 == __FILE__
 
   config = default_config.update(clo)
 
-  vcsinfo = VCSInfo::App.new
   result = config[:workdirs].map{|wd|
-    vcsinfo.send(config[:subcmd], wd).chomp
+    VCSInfo.send(config[:subcmd], wd).chomp
   }
   print result.join("\n")
   print "\n" if $stdout.tty?
