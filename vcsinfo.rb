@@ -6,9 +6,7 @@
 # License: Public Domain
 #
 # Usage:
-#   vcsinfo.rb --log [WORKING_DIR] > ChangeLog
-#   vcsinfo.rb --ls  [WORKING_DIR] > MANIFEST
-#   vcsinfo.rb --rev [WORKING_DIR] #=> 123, 123M, etc
+#   vcsinfo.rb rev [WORKING_DIR] #=> 123, 123M, etc
 
 require 'shellwords'
 
@@ -124,31 +122,65 @@ module VCSInfo
         nil
       end
     end
-
-    def help(d)
-      ARGV.options.to_s
-    end
   end
 end
 
 if $0 == __FILE__
   require 'optparse'
+
   default_config = {
-    :cmd  => :help,
     :test => false
   }
+
+  appfname = File.basename(__FILE__)
   clo = command_line_options = {}
   ARGV.options {|o|
-    o.def_option('--log', 'display log')            {|s| clo[:cmd] = :log}
-    o.def_option('--ls',  'display versioned files'){|s| clo[:cmd] = :ls}
-    o.def_option('--branch', 'display branch')      {|s| clo[:cmd] = :branch}
-    o.def_option('--rev', 'display revision')       {|s| clo[:cmd] = :rev}
-    o.def_option('--help', 'show this message')     {|s| clo[:cmd] = :help}
+    o.banner =<<-EOS.gsub(/^ {6}/, '')
+      Usage: #{appfname} [OPTION] SUBCOMMAND [WORKDIR]...
+      Show information on VCS working tree
+      Subcommands:
+              branch  display branch
+              log     display log
+              ls      display versioned files
+              rev     display revision
+      Options:
+      EOS
+    o.def_option('--help', 'show this message'){|s| puts o; exit}
+    o.on_tail <<-EOS.gsub(/^ {6}/, '')
+      Example:
+              #{appfname} branch          #=> master
+              #{appfname} log > ChangeLog
+              #{appfname} ls  > MANIFEST
+              #{appfname} rev             #=> 123, 123M, etc
+      EOS
     o.parse!
   } or exit(1)
+
+  if ARGV.empty?
+    $stderr.print "#{appfname}: subcommand required\n"
+    $stderr.print ARGV.options
+    exit 1
+  else
+    unless [:branch, :log, :ls, :rev].include?(ARGV.first.intern)
+      $stderr.print "#{appfname}: #{ARGV.first}: unsupported subcommand\n"
+      $stderr.print ARGV.options
+      exit 1
+    else
+      clo[:subcmd] = ARGV.first.intern
+    end
+  end
+  if ARGV.size < 2
+    clo[:workdirs] = ['.']
+  else
+    clo[:workdirs] = ARGV[1..-1]
+  end
+
   config = default_config.update(clo)
+
   vcsinfo = VCSInfo::App.new
-  result = vcsinfo.send(config[:cmd], (arg = ARGV.first || '.'))
-  print result.chomp
+  result = config[:workdirs].map{|wd|
+    vcsinfo.send(config[:subcmd], wd).chomp
+  }
+  print result.join("\n")
   print "\n" if $stdout.tty?
 end
