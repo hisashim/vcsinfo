@@ -1,12 +1,22 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 #
-# VCS working tree inspector
+# VCS working tree information inspector
 # Copyright 2012 Hisashi Morita
 # License: Public Domain
 #
-# Usage:
-#   vcsinfo.rb rev [WORKING_DIR] #=> 123, 123M, etc
+# Usage: vcsinfo.rb [options] subcommand [dir]
+#   subcommand:
+#     branch  display branch
+#     log     display history
+#     ls      display versioned files
+#     rev     display revision
+#   dir:
+#     directory to inspect (default: .)
+# Options:
+#   --help    show help message
+# Supported VCSs:
+#   Git, Mercurial, Bazaar, and Subversion
 
 require 'shellwords'
 
@@ -136,22 +146,32 @@ if $0 == __FILE__
   clo = command_line_options = {}
   ARGV.options {|o|
     o.banner =<<-EOS.gsub(/^ {6}/, '')
-      Usage: #{appfname} [OPTION] SUBCOMMAND [WORKDIR]...
-      Show information on VCS working tree
-      Subcommands:
+      #{appfname}: VCS working tree information inspector
+
+      Usage: #{appfname} [options] subcommand [dir]...
+
+        subcommand:
               branch  display branch
               log     display log
               ls      display versioned files
               rev     display revision
+
+        dir:
+              directory to inspect (default: .)
+
       Options:
       EOS
-    o.def_option('--help', 'show this message'){|s| puts o; exit}
+    o.def_option('--help', 'show help message'){|s| puts o; exit}
     o.on_tail <<-EOS.gsub(/^ {6}/, '')
-      Example:
-              #{appfname} branch          #=> master
+
+      Examples:
+              #{appfname} branch            #=> master
               #{appfname} log > ChangeLog
               #{appfname} ls  > MANIFEST
-              #{appfname} rev             #=> 123, 123M, etc
+              #{appfname} rev               #=> abc123, abc123M, etc.
+
+      Supported VCSs:
+              Git, Mercurial, Bazaar, and Subversion
       EOS
     o.parse!
   } or exit(1)

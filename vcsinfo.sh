@@ -5,14 +5,18 @@
 # Copyright 2015 Hisashi Morita
 # License: Public domain
 #
-# Usage: vcsinfo.sh command [dir]
-#   command:
-#     log         display log
-#     ls          display versioned files
-#     branch      display branch
-#     rev         display revision
-#     help        show this message
-#   dir:          directory to inspect (default: .)
+# Usage: vcsinfo.sh [options] subcommand [dir]
+#   subcommand:
+#     branch  display branch
+#     log     display history
+#     ls      display versioned files
+#     rev     display revision
+#   dir:
+#     directory to inspect (default: .)
+# Options:
+#   --help    show help message
+# Supported VCSs:
+#   Git, Mercurial, Bazaar, and Subversion
 
 set -e
 
@@ -195,27 +199,33 @@ case $CMD in
   help|--help|-h|'')
     HELP="$APP: VCS working tree information inspector
 
-Usage: $APP command [dir]
+Usage: $APP [options] subcommand [dir]
 
-  command:
-    log         display log
-    ls          display versioned files
-    branch      display branch
-    rev         display revision
-    help        show this message
-  dir:          directory to inspect (default: .)
+  subcommand:
+        branch  display branch
+        log     display log
+        ls      display versioned files
+        rev     display revision
+
+  dir:
+        directory to inspect (default: .)
+
+Options:
+        --help                       show help message
 
 Examples:
-  $APP log > ChangeLog
-  $APP ls  > MANIFEST
-  $APP rev #=> 123, 123M, etc.
+        $APP branch            #=> master
+        $APP log > ChangeLog
+        $APP ls  > MANIFEST
+        $APP rev               #=> abc123, abc123M, etc.
 
-Supported VCSs: Git, Mercurial, Bazaar, and Subversion"
+Supported VCSs:
+        Git, Mercurial, Bazaar, and Subversion"
     $ECHO "${HELP}"
     exit 0
     ;;
   *)
-    ERROR="$APP: $CMD: unknown command
+    ERROR="$APP: $CMD: unknown subcommand
   Type \`$APP help' for usage"
     $ECHO "${ERROR}"
     exit 1
