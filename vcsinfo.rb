@@ -107,7 +107,7 @@ module VCSInfo
       when :svn
         `svn info | grep '^URL' | xargs -I{} basename {}`
       else
-        nil
+        'unknown'
       end
     end
 
@@ -129,7 +129,7 @@ module VCSInfo
       when :svn
         `svnversion #{ds}`.gsub(/:/, '-')
       else
-        nil
+        'unknown'
       end
     end
   end
