@@ -45,14 +45,14 @@ case $CMD in
   log)
     # Git
     if [ x"${GIT}" = xTRUE ]; then
-      (cd "${WD}" && git status --porcelain >/dev/null 2>&1) && GIT_WD=TRUE
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
       if [ x"${GIT_WD}" = xTRUE ]; then
         LOG=`cd "${WD}"; git --no-pager log --format="%ai %aN %n%n%x09* %s%n"`
       fi
     fi
     # Mercurial
     if [ x"${HG}" = xTRUE ]; then
-      (hg status "${WD}" >/dev/null 2>&1) && HG_WD=TRUE
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
       if [ x"${HG_WD}" = xTRUE ]; then
         LOG=`cd "${WD}"; hg log --style changelog`
       fi
@@ -80,14 +80,14 @@ case $CMD in
   ls)
     # Git
     if [ x"${GIT}" = xTRUE ]; then
-      (cd "${WD}" && git status --porcelain >/dev/null 2>&1) && GIT_WD=TRUE
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
       if [ x"${GIT_WD}" = xTRUE ]; then
         [ ! "${FILES}" ] && FILES=`cd "${WD}" && git ls-files | sort`
       fi
     fi
     # Mercurial
     if [ x"${HG}" = xTRUE ]; then
-      (hg status "${WD}" >/dev/null 2>&1) && HG_WD=TRUE
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
       if [ x"${HG_WD}" = xTRUE ]; then
         [ ! "${FILES}" ] && \
           FILES=`cd "${WD}" && hg status --all | grep -v '^?' | cut -c3- | sort`
@@ -118,14 +118,14 @@ case $CMD in
   branch)
     # Git
     if [ x"${GIT}" = xTRUE ]; then
-      (cd "${WD}" && git status --porcelain >/dev/null 2>&1) && GIT_WD=TRUE
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
       if [ x"${GIT_WD}" = xTRUE ]; then
         [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; git rev-parse --abbrev-ref HEAD)`
       fi
     fi
     # Mercurial
     if [ x"${HG}" = xTRUE ]; then
-      (hg status "${WD}" >/dev/null 2>&1) && HG_WD=TRUE
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
       if [ x"${HG_WD}" = xTRUE ]; then
         NB=`(cd ${WD}; hg branch)`
         BM=`(cd ${WD}; hg bookmarks | grep '^ \* ' \
@@ -159,7 +159,7 @@ case $CMD in
   rev)
     # Git
     if [ x"${GIT}" = xTRUE ]; then
-      (cd "${WD}" && git status --porcelain >/dev/null 2>&1) && GIT_WD=TRUE
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
       if [ x"${GIT_WD}" = xTRUE ]; then
         HASH=` (cd "${WD}" && git describe --all --long) | \
                 sed "s/^.*-g\([0-9a-z]\+\)$/\1/g"`
@@ -171,7 +171,7 @@ case $CMD in
     fi
     # Mercurial
     if [ x"${HG}" = xTRUE ]; then
-      (hg status "${WD}" >/dev/null 2>&1) && HG_WD=TRUE
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
       if [ x"${HG_WD}" = xTRUE ]; then
         [ ! "${REV}" ] && REV=`hg identify --id "${WD}" | sed "s/+/M/g"`
       fi

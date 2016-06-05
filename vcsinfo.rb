@@ -31,8 +31,8 @@ module VCSInfo
     def wt?(vcs, d)
       ds = d.shellescape
       case vcs
-      when 'git' then `cd #{ds} && git status --porcelain >/dev/null 2>&1`; $?==0
-      when 'hg'  then `hg status #{ds} >/dev/null 2>&1`; $?==0
+      when 'git' then `(cd #{ds} && git status --porcelain) >/dev/null 2>&1`; $?==0
+      when 'hg'  then `(cd #{ds} && hg status) >/dev/null 2>&1`; $?==0
       when 'bzr' then `bzr status #{ds} >/dev/null 2>&1`; $?==0
       when 'svn' then `svn info #{ds} >/dev/null 2>&1`; $?==0
       else
