@@ -47,21 +47,22 @@ case $CMD in
     if [ x"${GIT}" = xTRUE ]; then
       ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
       if [ x"${GIT_WD}" = xTRUE ]; then
-        LOG=`cd "${WD}"; git --no-pager log --format="%ai %aN %n%n%x09* %s%n"`
+        [ ! "${LOG}" ] && \
+          LOG=`cd "${WD}"; git --no-pager log --format="%ai %aN %n%n%x09* %s%n"`
       fi
     fi
     # Mercurial
     if [ x"${HG}" = xTRUE ]; then
       ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
       if [ x"${HG_WD}" = xTRUE ]; then
-        LOG=`cd "${WD}"; hg log --style changelog`
+        [ ! "${LOG}" ] && LOG=`cd "${WD}"; hg log --style changelog`
       fi
     fi
     # Bazaar
     if [ x"${BZR}" = xTRUE ]; then
       (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
       if [ x"${BZR_WD}" = xTRUE ]; then
-        LOG=`cd "${WD}"; bzr log --gnu-changelog`
+        [ ! "${LOG}" ] && LOG=`cd "${WD}"; bzr log --gnu-changelog`
       fi
     fi
     # Subversion
@@ -69,9 +70,9 @@ case $CMD in
       (svn info "${WD}" >/dev/null 2>&1) && SVN_WD=TRUE
       if [ x"${SVN_WD}" = xTRUE ]; then
         if [ x"${SVN2CL}" = xTRUE ]; then
-          LOG=`cd "${WD}"; svn2cl --stdout --include-rev`
+          [ ! "${LOG}" ] && LOG=`cd "${WD}"; svn2cl --stdout --include-rev`
         else
-          LOG=`cd "${WD}"; svn log -rBASE:0 -v`
+          [ ! "${LOG}" ] && LOG=`cd "${WD}"; svn log -rBASE:0 -v`
         fi
       fi
     fi
