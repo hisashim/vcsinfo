@@ -25,19 +25,24 @@ module VCSInfo
   class << self
     def cmd?(cmd)
       `which #{cmd.shellescape} >/dev/null`
-      $?
+      $?==0 ? true : false
     end
 
     def wt?(vcs, d)
       ds = d.shellescape
       case vcs
-      when 'git' then `(cd #{ds} && git status --porcelain) >/dev/null 2>&1`; $?==0
-      when 'hg'  then `(cd #{ds} && hg status) >/dev/null 2>&1`; $?==0
-      when 'bzr' then `bzr status #{ds} >/dev/null 2>&1`; $?==0
-      when 'svn' then `svn info #{ds} >/dev/null 2>&1`; $?==0
+      when 'git' then e=`(cd #{ds} && git status --porcelain) 2>&1 >/dev/null`
+      when 'hg'  then e=`(cd #{ds} && hg status) 2>&1 >/dev/null`
+      when 'bzr' then e=`bzr status #{ds} 2>&1 >/dev/null`
+      when 'svn' then e=`svn info #{ds} 2>&1 >/dev/null`
+        # ignore SVN_ERR_WC_NOT_WORKING_COPY and warn otherwise
+        unless /svn: (?:E155007)|(?:.*? is not a working copy)/m.match(e)
+          $stderr.print(e)
+        end
       else
-        false
+        return false
       end
+      $?==0 ? true : false
     end
 
     def guess_vcs(d)
@@ -198,7 +203,8 @@ if $0 == __FILE__
   config = default_config.update(clo)
 
   result = config[:workdirs].map{|wd|
-    VCSInfo.send(config[:subcmd], wd).chomp
+    out = VCSInfo.send(config[:subcmd], wd)
+    out ? out.chomp : nil
   }
   print result.join("\n")
   print "\n" if $stdout.tty?
