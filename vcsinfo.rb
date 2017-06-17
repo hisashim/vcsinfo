@@ -24,7 +24,7 @@ require 'shellwords'
 module VCSInfo
   VERSION = "0.0.1"
   class << self
-    def cmd?(cmd)
+    def cmd_exist?(cmd)
       `which #{cmd.shellescape} >/dev/null`
       $?==0 ? true : false
     end
@@ -48,10 +48,10 @@ module VCSInfo
 
     def guess_vcs(d)
       case
-      when (cmd? 'git' and wt?(d, 'git')) then :git
-      when (cmd? 'hg'  and wt?(d, 'hg'))  then :hg
-      when (cmd? 'bzr' and wt?(d, 'bzr')) then :bzr
-      when (cmd? 'svn' and wt?(d, 'svn')) then :svn
+      when (cmd_exist? 'git' and wt?(d, 'git')) then :git
+      when (cmd_exist? 'hg'  and wt?(d, 'hg'))  then :hg
+      when (cmd_exist? 'bzr' and wt?(d, 'bzr')) then :bzr
+      when (cmd_exist? 'svn' and wt?(d, 'svn')) then :svn
       else
         nil
       end
@@ -107,8 +107,8 @@ module VCSInfo
       when :hg  then `cd #{ds}; hg log --style changelog`
       when :bzr then `cd #{ds}; bzr log --gnu-changelog`
       when :svn then
-        if cmd? 'svn2cl' then `cd #{ds}; svn2cl --stdout --include-rev`
-        else                  `cd #{ds}; svn log -rBASE:0 -v`
+        if cmd_exist? 'svn2cl' then `cd #{ds}; svn2cl --stdout --include-rev`
+        else                        `cd #{ds}; svn log -rBASE:0 -v`
         end
       else
         nil
