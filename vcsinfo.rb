@@ -7,10 +7,11 @@
 #
 # Usage: vcsinfo.rb [options] subcommand [dir]
 #   subcommand:
-#     branch  display branch
-#     log     display history
-#     ls      display versioned files
-#     rev     display revision
+#     branch    display branch
+#     datetime  display date and time of the latest commit (in UTC)
+#     log       display history
+#     ls        display versioned files
+#     rev       display revision
 #   dir:
 #     directory to inspect (default: .)
 # Options:
@@ -75,6 +76,27 @@ module VCSInfo
       else
         'unknown'
       end
+    end
+
+    def datetime(d, format = '+%Y-%m-%dT%H:%M:%SZ')
+      ds = d.shellescape
+      normalize = " | xargs -I{} date -u --date {} '#{format}'"
+      case guess_vcs(d)
+      when :git
+        cmd = "cd #{ds}; git log -n 1 --format='%ci'" + normalize
+      when :hg
+        cmd = "cd #{ds}; hg log -r tip -T xml | grep '<date>'" +
+              " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
+      when :bzr
+        cmd = "cd #{ds}; bzr log -r-1 | grep 'timestamp'" +
+              " | sed 's/^timestamp: //'" + normalize
+      when :svn
+        cmd = "svn info --xml #{ds} | grep '<date>'" +
+              " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
+      else
+        return 'unknown'
+      end
+      `#{cmd}`.chomp
     end
 
     def log(d)
@@ -156,10 +178,11 @@ if $0 == __FILE__
       Usage: #{appfname} [options] subcommand [dir]...
 
         subcommand:
-              branch  display branch
-              log     display log
-              ls      display versioned files
-              rev     display revision
+              branch    display branch
+              datetime  display date and time of the latest commit (in UTC)
+              log       display log
+              ls        display versioned files
+              rev       display revision
 
         dir:
               directory to inspect (default: .)
@@ -171,6 +194,7 @@ if $0 == __FILE__
 
       Examples:
               #{appfname} branch            #=> master
+              #{appfname} datetime          #=> 2000-12-31T23:59:59Z
               #{appfname} log > ChangeLog
               #{appfname} ls  > MANIFEST
               #{appfname} rev               #=> abc123, abc123M, etc.
@@ -186,7 +210,7 @@ if $0 == __FILE__
     $stderr.print ARGV.options
     exit 1
   else
-    unless [:branch, :log, :ls, :rev].include?(ARGV.first.intern)
+    unless [:branch, :datetime, :log, :ls, :rev].include?(ARGV.first.intern)
       $stderr.print "#{appfname}: #{ARGV.first}: unsupported subcommand\n"
       $stderr.print ARGV.options
       exit 1

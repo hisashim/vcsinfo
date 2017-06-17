@@ -7,10 +7,11 @@
 #
 # Usage: vcsinfo.sh [options] subcommand [dir]
 #   subcommand:
-#     branch  display branch
-#     log     display history
-#     ls      display versioned files
-#     rev     display revision
+#     branch    display branch
+#     datetime  display date and time of the latest commit (in UTC)
+#     log       display history
+#     ls        display versioned files
+#     rev       display revision
 #   dir:
 #     directory to inspect (default: .)
 # Options:
@@ -82,6 +83,50 @@ case $CMD in
     fi
     [ ! "${BRANCH}" ] && BRANCH=unknown
     $ECHO "${BRANCH}"
+    ;;
+  datetime)
+    format=+%Y-%m-%dT%H:%M:%SZ
+    normalize="xargs -I{} date -u --date {} ${format}"
+    # Git
+    if [ x"${GIT}" = xTRUE ]; then
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
+      if [ x"${GIT_WD}" = xTRUE ]; then
+        [ ! "${DATETIME}" ] && DATETIME=`cd ${WD}; \
+          git log -n 1 --format='%ci' | ${normalize}`
+      fi
+    fi
+    # Mercurial
+    if [ x"${HG}" = xTRUE ]; then
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
+      if [ x"${HG_WD}" = xTRUE ]; then
+        [ ! "${DATETIME}" ] && DATETIME=`cd ${WD}; \
+          hg log -r tip -T xml | grep '<date>' \
+          | sed 's/<date>\(.*\)<\/date>/\1/' | ${normalize}`
+      fi
+    fi
+    # Bazaar
+    if [ x"${BZR}" = xTRUE ]; then
+      bzr heads --help >/dev/null; [ x"$?" = x0 ] && BZR_HEADS=TRUE
+      if [ x"${BZR_HEADS}" = xTRUE ] ; then
+        (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
+        if [ x"${BZR_WD}" = xTRUE ]; then
+          [ ! "${DATETIME}" ] && DATETIME=`cd ${WD}; \
+            bzr log -r-1 | grep 'timestamp' \
+            | sed 's/^timestamp: //' | ${normalize}`
+        fi
+      fi
+    fi
+    # Subversion
+    if [ x"${SVN}" = xTRUE ]; then
+      (svn info "${WD}" >/dev/null 2>&1) && SVN_WD=TRUE
+      if [ x"${SVN_WD}" = xTRUE ]; then
+        [ ! "${DATETIME}" ] && DATETIME=`cd ${WD}; \
+          svn info --xml | grep '<date>' \
+          | sed 's/<date>\(.*\)<\/date>/\1/' | ${normalize}`
+      fi
+    fi
+    [ ! "${DATETIME}" ] && DATETIME=unknown
+    $ECHO "${DATETIME}"
     ;;
   log)
     # Git
@@ -203,10 +248,11 @@ case $CMD in
 Usage: $APP [options] subcommand [dir]
 
   subcommand:
-        branch  display branch
-        log     display log
-        ls      display versioned files
-        rev     display revision
+        branch    display branch
+        datetime  display date and time of the latest commit (in UTC)
+        log       display log
+        ls        display versioned files
+        rev       display revision
 
   dir:
         directory to inspect (default: .)
@@ -216,6 +262,7 @@ Options:
 
 Examples:
         $APP branch            #=> master
+        $APP datetime          #=> 2000-12-31T23:59:59Z
         $APP log > ChangeLog
         $APP ls  > MANIFEST
         $APP rev               #=> abc123, abc123M, etc.
