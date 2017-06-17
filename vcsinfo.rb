@@ -99,7 +99,7 @@ module VCSInfo
       ds = d.shellescape
       case guess_vcs(d)
       when :git
-        `cd #{ds}; git rev-parse --abbrev-ref HEAD`
+        `cd #{ds}; git rev-parse --abbrev-ref HEAD`.chomp
       when :hg
         named_branch = `cd #{ds}; hg branch`.chomp
         bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
@@ -110,7 +110,7 @@ module VCSInfo
             gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
         nick
       when :svn
-        `svn info #{ds} | grep '^URL' | xargs -I{} basename {}`
+        `svn info #{ds} | grep '^URL' | xargs -I{} basename {}`.chomp
       else
         'unknown'
       end
@@ -126,13 +126,13 @@ module VCSInfo
                  scan(/modified:|added:|deleted:/).empty? ? '' : 'M'
         rev_id + ifmod
       when :hg
-        `hg identify --id #{ds}`.gsub(/\+/, 'M')
+        `hg identify --id #{ds}`.chomp.gsub(/\+/, 'M')
       when :bzr
         rev_id = `bzr revno #{ds}`.chomp
         ifmod  = `bzr status --versioned #{ds}`.scan(/^\w+:/).empty? ? '' : 'M'
         rev_id + ifmod
       when :svn
-        `svnversion #{ds}`.gsub(/:/, '-')
+        `svnversion #{ds}`.chomp.gsub(/:/, '-')
       else
         'unknown'
       end
