@@ -228,7 +228,7 @@ case $CMD in
       if [ x"${BZR_WD}" = xTRUE ]; then
         REVNO=`bzr revno "${WD}"`
         IFMOD=`bzr status --versioned "${WD}" \
-               | grep "^[a-z]*:" -q && echo -n "M"`
+               | grep -q "^[a-z]*:" && echo -n "M"; true`
         [ ! "${REV}" ] && REV=${REVNO}${IFMOD}
       fi
     fi
