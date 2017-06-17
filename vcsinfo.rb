@@ -56,6 +56,27 @@ module VCSInfo
       end
     end
 
+    def branch(d)
+      ds = d.shellescape
+      case guess_vcs(d)
+      when :git
+        `cd #{ds}; git rev-parse --abbrev-ref HEAD`.chomp
+      when :hg
+        named_branch = `cd #{ds}; hg branch`.chomp
+        bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
+          gsub(/^ \* ([^ ]+?) +?[^ ]*?$/, '\1').chomp
+        [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
+      when :bzr
+        nick = `cd #{ds}; bzr heads | grep '^ *branch nick: '`.
+            gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
+        nick
+      when :svn
+        `svn info #{ds} | grep '^URL' | xargs -I{} basename {}`.chomp
+      else
+        'unknown'
+      end
+    end
+
     def log(d)
       ds = d.shellescape
       case guess_vcs(d)
@@ -92,27 +113,6 @@ module VCSInfo
          | sort`
       else
         nil
-      end
-    end
-
-    def branch(d)
-      ds = d.shellescape
-      case guess_vcs(d)
-      when :git
-        `cd #{ds}; git rev-parse --abbrev-ref HEAD`.chomp
-      when :hg
-        named_branch = `cd #{ds}; hg branch`.chomp
-        bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
-          gsub(/^ \* ([^ ]+?) +?[^ ]*?$/, '\1').chomp
-        [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
-      when :bzr
-        nick = `cd #{ds}; bzr heads | grep '^ *branch nick: '`.
-            gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
-        nick
-      when :svn
-        `svn info #{ds} | grep '^URL' | xargs -I{} basename {}`.chomp
-      else
-        'unknown'
       end
     end
 

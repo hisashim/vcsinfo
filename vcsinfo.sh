@@ -42,6 +42,47 @@ which svn    >/dev/null && SVN=TRUE
 which svn2cl >/dev/null && SVN2CL=TRUE
 
 case $CMD in
+  branch)
+    # Git
+    if [ x"${GIT}" = xTRUE ]; then
+      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
+      if [ x"${GIT_WD}" = xTRUE ]; then
+        [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; git rev-parse --abbrev-ref HEAD)`
+      fi
+    fi
+    # Mercurial
+    if [ x"${HG}" = xTRUE ]; then
+      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
+      if [ x"${HG_WD}" = xTRUE ]; then
+        NB=`(cd ${WD}; hg branch)`
+        BM=`(cd ${WD}; hg bookmarks | grep '^ \* ' \
+            | sed 's/^ \* \([^ ]*\) *[^ ]*$/\1/g')`
+        [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; \
+            [ ! ${BM} ] && echo ${NB} || echo ${NB}-${BM})`
+      fi
+    fi
+    # Bazaar
+    if [ x"${BZR}" = xTRUE ]; then
+      bzr heads --help >/dev/null; [ x"$?" = x0 ] && BZR_HEADS=TRUE
+      if [ x"${BZR_HEADS}" = xTRUE ] ; then
+        (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
+        if [ x"${BZR_WD}" = xTRUE ]; then
+          [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; bzr heads \
+              | grep '^ *branch nick: ' | sed 's/^ *branch nick: \(.*\)$/\1/g')`
+        fi
+      fi
+    fi
+    # Subversion
+    if [ x"${SVN}" = xTRUE ]; then
+      (svn info "${WD}" >/dev/null 2>&1) && SVN_WD=TRUE
+      if [ x"${SVN_WD}" = xTRUE ]; then
+        [ ! "${BRANCH}" ] && BRANCH=`cd ${WD}; \
+            svn info | grep '^URL' | xargs -I{} basename {}`
+      fi
+    fi
+    [ ! "${BRANCH}" ] && BRANCH=unknown
+    $ECHO "${BRANCH}"
+    ;;
   log)
     # Git
     if [ x"${GIT}" = xTRUE ]; then
@@ -115,47 +156,6 @@ case $CMD in
       fi
     fi
     $ECHO "${FILES}"
-    ;;
-  branch)
-    # Git
-    if [ x"${GIT}" = xTRUE ]; then
-      ((cd "${WD}" && git status --porcelain) >/dev/null 2>&1) && GIT_WD=TRUE
-      if [ x"${GIT_WD}" = xTRUE ]; then
-        [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; git rev-parse --abbrev-ref HEAD)`
-      fi
-    fi
-    # Mercurial
-    if [ x"${HG}" = xTRUE ]; then
-      ((cd "${WD}" && hg status) >/dev/null 2>&1) && HG_WD=TRUE
-      if [ x"${HG_WD}" = xTRUE ]; then
-        NB=`(cd ${WD}; hg branch)`
-        BM=`(cd ${WD}; hg bookmarks | grep '^ \* ' \
-            | sed 's/^ \* \([^ ]*\) *[^ ]*$/\1/g')`
-        [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; \
-            [ ! ${BM} ] && echo ${NB} || echo ${NB}-${BM})`
-      fi
-    fi
-    # Bazaar
-    if [ x"${BZR}" = xTRUE ]; then
-      bzr heads --help >/dev/null; [ x"$?" = x0 ] && BZR_HEADS=TRUE
-      if [ x"${BZR_HEADS}" = xTRUE ] ; then
-        (bzr status "${WD}" >/dev/null 2>&1) && BZR_WD=TRUE
-        if [ x"${BZR_WD}" = xTRUE ]; then
-          [ ! "${BRANCH}" ] && BRANCH=`(cd ${WD}; bzr heads \
-              | grep '^ *branch nick: ' | sed 's/^ *branch nick: \(.*\)$/\1/g')`
-        fi
-      fi
-    fi
-    # Subversion
-    if [ x"${SVN}" = xTRUE ]; then
-      (svn info "${WD}" >/dev/null 2>&1) && SVN_WD=TRUE
-      if [ x"${SVN_WD}" = xTRUE ]; then
-        [ ! "${BRANCH}" ] && BRANCH=`cd ${WD}; \
-            svn info | grep '^URL' | xargs -I{} basename {}`
-      fi
-    fi
-    [ ! "${BRANCH}" ] && BRANCH=unknown
-    $ECHO "${BRANCH}"
     ;;
   rev)
     # Git
