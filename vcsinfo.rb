@@ -22,7 +22,7 @@
 require 'shellwords'
 
 module VCSInfo
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
   class << self
     def cmd_exist?(cmd)
       `which #{cmd.shellescape} >/dev/null`

@@ -22,7 +22,7 @@
 set -e
 
 APP=`basename $0`
-APPVERSION=0.0.1
+APPVERSION=0.0.2
 CMD="$1"
 
 if [ "$2" ]; then
