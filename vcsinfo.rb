@@ -28,7 +28,7 @@ module VCSInfo
       $?==0 ? true : false
     end
 
-    def wt?(vcs, d)
+    def wt?(d, vcs)
       ds = d.shellescape
       case vcs
       when 'git' then e=`(cd #{ds} && git status --porcelain) 2>&1 >/dev/null`
@@ -47,10 +47,10 @@ module VCSInfo
 
     def guess_vcs(d)
       case
-      when (cmd? 'git' and wt?('git', d)) then :git
-      when (cmd? 'hg'  and wt?('hg',  d)) then :hg
-      when (cmd? 'bzr' and wt?('bzr', d)) then :bzr
-      when (cmd? 'svn' and wt?('svn', d)) then :svn
+      when (cmd? 'git' and wt?(d, 'git')) then :git
+      when (cmd? 'hg'  and wt?(d, 'hg'))  then :hg
+      when (cmd? 'bzr' and wt?(d, 'bzr')) then :bzr
+      when (cmd? 'svn' and wt?(d, 'svn')) then :svn
       else
         nil
       end
