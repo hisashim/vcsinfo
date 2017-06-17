@@ -243,9 +243,6 @@ case $CMD in
     [ ! "${REV}" ] && REV=unknown
     $ECHO "${REV}"
     ;;
-  --version)
-    echo $APPVERSION
-    ;;
   help|--help|-h|'')
     HELP="$APP: VCS working tree information inspector
 
@@ -275,6 +272,10 @@ Examples:
 Supported VCSs:
         Git, Mercurial, Bazaar, and Subversion"
     $ECHO "${HELP}"
+    exit 0
+    ;;
+  --version)
+    echo $APPVERSION
     exit 0
     ;;
   *)
