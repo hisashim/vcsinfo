@@ -243,7 +243,7 @@ case $CMD in
     [ ! "${REV}" ] && REV=unknown
     $ECHO "${REV}"
     ;;
-  help|--help|-h|'')
+  --help|-h|'')
     HELP="$APP: VCS working tree information inspector
 
 Usage: $APP [options] subcommand [dir]
@@ -279,8 +279,8 @@ Supported VCSs:
     exit 0
     ;;
   *)
-    ERROR="$APP: $CMD: unknown subcommand
-  Type \`$APP help' for usage"
+    ERROR="$APP: $CMD: unknown subcommand or option
+  Type \`$APP --help' for usage"
     $ECHO "${ERROR}"
     exit 1
     ;;
