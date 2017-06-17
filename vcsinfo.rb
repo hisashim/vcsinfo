@@ -110,7 +110,7 @@ module VCSInfo
             gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
         nick
       when :svn
-        `svn info | grep '^URL' | xargs -I{} basename {}`
+        `svn info #{ds} | grep '^URL' | xargs -I{} basename {}`
       else
         'unknown'
       end
