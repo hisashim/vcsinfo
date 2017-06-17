@@ -15,6 +15,7 @@ Usage
 
   * subcommand:
     - branch: display branch
+    - datetime: display date and time of the latest commit (in UTC)
     - log: display history
     - ls: display versioned files
     - rev: display revision
@@ -23,10 +24,12 @@ Usage
 
   * options:
     - --help: show help message
+    - --version: show version
 
 ### Examples
 
     $ vcsinfo branch            #=> master
+    $ vcsinfo datetime          #=> 2000-12-31T23:59:59Z
     $ vcsinfo log > ChangeLog
     $ vcsinfo ls  > MANIFEST
     $ vcsinfo rev               #=> abc123, abc123M, etc.
