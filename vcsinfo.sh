@@ -22,6 +22,7 @@
 set -e
 
 APP=`basename $0`
+APPVERSION=0.0.1
 CMD="$1"
 
 if [ "$2" ]; then
@@ -242,6 +243,9 @@ case $CMD in
     [ ! "${REV}" ] && REV=unknown
     $ECHO "${REV}"
     ;;
+  --version)
+    echo $APPVERSION
+    ;;
   help|--help|-h|'')
     HELP="$APP: VCS working tree information inspector
 
@@ -259,6 +263,7 @@ Usage: $APP [options] subcommand [dir]
 
 Options:
         --help                       show help message
+        --version                    show version
 
 Examples:
         $APP branch            #=> master
