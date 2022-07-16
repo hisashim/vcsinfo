@@ -29,8 +29,8 @@ module VCSInfo
       Process.last_status.success?
     end
 
-    def wt?(d, vcs)
-      ds = d.shellescape
+    def wt?(dir, vcs)
+      ds = dir.shellescape
       case vcs
       when 'git' then e=`(cd #{ds} && git status --porcelain) 2>&1 >/dev/null`
       when 'hg'  then e=`(cd #{ds} && hg status) 2>&1 >/dev/null`
@@ -46,20 +46,20 @@ module VCSInfo
       Process.last_status.success?
     end
 
-    def guess_vcs(d)
+    def guess_vcs(dir)
       case
-      when (cmd_exist? 'git' and wt?(d, 'git')) then :git
-      when (cmd_exist? 'hg'  and wt?(d, 'hg'))  then :hg
-      when (cmd_exist? 'bzr' and wt?(d, 'bzr')) then :bzr
-      when (cmd_exist? 'svn' and wt?(d, 'svn')) then :svn
+      when (cmd_exist? 'git' and wt?(dir, 'git')) then :git
+      when (cmd_exist? 'hg'  and wt?(dir, 'hg'))  then :hg
+      when (cmd_exist? 'bzr' and wt?(dir, 'bzr')) then :bzr
+      when (cmd_exist? 'svn' and wt?(dir, 'svn')) then :svn
       else
         nil
       end
     end
 
-    def branch(d)
-      ds = d.shellescape
-      case guess_vcs(d)
+    def branch(dir)
+      ds = dir.shellescape
+      case guess_vcs(dir)
       when :git
         `cd #{ds}; git rev-parse --abbrev-ref HEAD`.chomp
       when :hg
@@ -78,11 +78,11 @@ module VCSInfo
       end
     end
 
-    def datetime(d, format = '+%Y-%m-%dT%H:%M:%SZ')
-      ds = d.shellescape
+    def datetime(dir, format = '+%Y-%m-%dT%H:%M:%SZ')
+      ds = dir.shellescape
       normalize = " | xargs -I{} date -u --date {} '#{format}'"
       cmd =
-        case guess_vcs(d)
+        case guess_vcs(dir)
         when :git
           "cd #{ds}; git log -n 1 --format='%ci'" + normalize
         when :hg
@@ -100,9 +100,9 @@ module VCSInfo
       `#{cmd}`.chomp
     end
 
-    def log(d)
-      ds = d.shellescape
-      case guess_vcs(d)
+    def log(dir)
+      ds = dir.shellescape
+      case guess_vcs(dir)
       when :git then `cd #{ds}; git --no-pager log \
                       --format=\"%ai %aN %n%n%x09* %s%n\"`
       when :hg  then `cd #{ds}; hg log --style changelog`
@@ -116,9 +116,9 @@ module VCSInfo
       end
     end
 
-    def ls(d)
-      ds = d.shellescape
-      case guess_vcs(d)
+    def ls(dir)
+      ds = dir.shellescape
+      case guess_vcs(dir)
       when :git
         `cd #{ds} && git ls-files | sort`
       when :hg
@@ -139,9 +139,9 @@ module VCSInfo
       end
     end
 
-    def rev(d)
-      ds = d.shellescape
-      case guess_vcs(d)
+    def rev(dir)
+      ds = dir.shellescape
+      case guess_vcs(dir)
       when :git
         rev_id = `(cd #{ds} && git describe --all --long)`.
                  chomp.gsub(/\A.*?-g([0-9a-z]+).*\Z/, '\1')
