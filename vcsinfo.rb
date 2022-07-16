@@ -26,7 +26,7 @@ module VCSInfo
   class << self
     def cmd_exist?(cmd)
       `which #{cmd.shellescape} >/dev/null`
-      $?==0 ? true : false
+      Process.last_status.success?
     end
 
     def wt?(d, vcs)
@@ -43,7 +43,7 @@ module VCSInfo
       else
         return false
       end
-      $?==0 ? true : false
+      Process.last_status.success?
     end
 
     def guess_vcs(d)
@@ -66,7 +66,7 @@ module VCSInfo
         named_branch = `cd #{ds}; hg branch`.chomp
         bookmark = `cd #{ds}; hg bookmarks | grep '^ \* '`.
           gsub(/^ \* ([^ ]+?) +?[^ ]*?$/, '\1').chomp
-        [named_branch, bookmark].delete_if{|e|e.empty?}.join('-')
+        [named_branch, bookmark].delete_if { |e| e.empty? }.join('-')
       when :bzr
         nick = `cd #{ds}; bzr heads | grep '^ *branch nick: '`.
             gsub(/^ *branch nick: ([^ ]+)$/, '\1').chomp
@@ -81,21 +81,22 @@ module VCSInfo
     def datetime(d, format = '+%Y-%m-%dT%H:%M:%SZ')
       ds = d.shellescape
       normalize = " | xargs -I{} date -u --date {} '#{format}'"
-      case guess_vcs(d)
-      when :git
-        cmd = "cd #{ds}; git log -n 1 --format='%ci'" + normalize
-      when :hg
-        cmd = "cd #{ds}; hg log -r tip -T xml | grep '<date>'" +
-              " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
-      when :bzr
-        cmd = "cd #{ds}; bzr log -r-1 | grep 'timestamp'" +
-              " | sed 's/^timestamp: //'" + normalize
-      when :svn
-        cmd = "svn info --xml #{ds} | grep '<date>'" +
-              " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
-      else
-        return 'unknown'
-      end
+      cmd =
+        case guess_vcs(d)
+        when :git
+          "cd #{ds}; git log -n 1 --format='%ci'" + normalize
+        when :hg
+          "cd #{ds}; hg log -r tip -T xml | grep '<date>'" +
+          " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
+        when :bzr
+          "cd #{ds}; bzr log -r-1 | grep 'timestamp'" +
+          " | sed 's/^timestamp: //'" + normalize
+        when :svn
+          "svn info --xml #{ds} | grep '<date>'" +
+          " | sed 's/<date>\\(.*\\)<\\/date>/\\1/'" + normalize
+        else
+          return 'unknown'
+        end
       `#{cmd}`.chomp
     end
 
@@ -162,7 +163,7 @@ module VCSInfo
   end
 end
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__ # called as an application?
   require 'optparse'
 
   default_config = {
