@@ -161,76 +161,86 @@ module VCSInfo
       end
     end
   end
-end
 
-if $PROGRAM_NAME == __FILE__ # called as an application?
-  require 'optparse'
+  module CLI
+    def self.called_as_an_application?
+      $PROGRAM_NAME == __FILE__
+    end
 
-  default_config = {
-    :test => false
-  }
+    def self.run
+      require 'optparse'
 
-  appfname = File.basename(__FILE__)
-  clo = command_line_options = {}
-  ARGV.options {|o|
-    o.banner =<<-EOS.gsub(/^ {6}/, '')
-      #{appfname}: VCS working tree information inspector
+      default_config = {
+        :test => false
+      }
 
-      Usage: #{appfname} [options] subcommand [dir]...
+      appfname = File.basename(__FILE__)
+      clo = command_line_options = {}
+      ARGV.options {|o|
+        o.banner =<<-EOS.gsub(/^ {6}/, '')
+          #{appfname}: VCS working tree information inspector
 
-        subcommand:
-              branch    display branch
-              datetime  display date and time of the latest commit (in UTC)
-              log       display log
-              ls        display versioned files
-              rev       display revision
+          Usage: #{appfname} [options] subcommand [dir]...
 
-        dir:
-              directory to inspect (default: .)
+            subcommand:
+                  branch    display branch
+                  datetime  display date and time of the latest commit (in UTC)
+                  log       display log
+                  ls        display versioned files
+                  rev       display revision
 
-      Options:
-      EOS
-    o.def_option('--help', 'show help message'){|s| puts o; exit}
-    o.on_tail <<-EOS.gsub(/^ {6}/, '')
+            dir:
+                  directory to inspect (default: .)
 
-      Examples:
-              #{appfname} branch            #=> master
-              #{appfname} datetime          #=> 2000-12-31T23:59:59Z
-              #{appfname} log > ChangeLog
-              #{appfname} ls  > MANIFEST
-              #{appfname} rev               #=> abc123, abc123M, etc.
+          Options:
+          EOS
+        o.def_option('--help', 'show help message'){|s| puts o; exit}
+        o.on_tail <<-EOS.gsub(/^ {6}/, '')
 
-      Supported VCSs:
-              Git, Mercurial, Bazaar, and Subversion
-      EOS
-    o.parse!
-  } or exit(1)
+          Examples:
+                  #{appfname} branch            #=> master
+                  #{appfname} datetime          #=> 2000-12-31T23:59:59Z
+                  #{appfname} log > ChangeLog
+                  #{appfname} ls  > MANIFEST
+                  #{appfname} rev               #=> abc123, abc123M, etc.
 
-  if ARGV.empty?
-    $stderr.print "#{appfname}: subcommand required\n"
-    $stderr.print ARGV.options
-    exit 1
-  else
-    unless [:branch, :datetime, :log, :ls, :rev].include?(ARGV.first.intern)
-      $stderr.print "#{appfname}: #{ARGV.first}: unsupported subcommand\n"
-      $stderr.print ARGV.options
-      exit 1
-    else
-      clo[:subcmd] = ARGV.first.intern
+          Supported VCSs:
+                  Git, Mercurial, Bazaar, and Subversion
+          EOS
+        o.parse!
+      } or exit(1)
+
+      if ARGV.empty?
+        $stderr.print "#{appfname}: subcommand required\n"
+        $stderr.print ARGV.options
+        exit 1
+      else
+        unless [:branch, :datetime, :log, :ls, :rev].include?(ARGV.first.intern)
+          $stderr.print "#{appfname}: #{ARGV.first}: unsupported subcommand\n"
+          $stderr.print ARGV.options
+          exit 1
+        else
+          clo[:subcmd] = ARGV.first.intern
+        end
+      end
+      if ARGV.size < 2
+        clo[:workdirs] = ['.']
+      else
+        clo[:workdirs] = ARGV[1..-1]
+      end
+
+      config = default_config.update(clo)
+
+      result = config[:workdirs].map{|wd|
+        out = VCSInfo.send(config[:subcmd], wd)
+        out ? out.chomp : nil
+      }
+      print result.join("\n")
+      print "\n" if $stdout.tty?
     end
   end
-  if ARGV.size < 2
-    clo[:workdirs] = ['.']
-  else
-    clo[:workdirs] = ARGV[1..-1]
-  end
+end
 
-  config = default_config.update(clo)
-
-  result = config[:workdirs].map{|wd|
-    out = VCSInfo.send(config[:subcmd], wd)
-    out ? out.chomp : nil
-  }
-  print result.join("\n")
-  print "\n" if $stdout.tty?
+if VCSInfo::CLI.called_as_an_application?
+  VCSInfo::CLI.run
 end
