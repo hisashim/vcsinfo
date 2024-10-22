@@ -210,9 +210,7 @@ case $CMD in
       if [ x"${GIT_WD}" = xTRUE ]; then
         HASH=` (cd "${WD}" && git describe --all --long) | \
                 sed "s/^.*-g\([0-9a-z]\+\)$/\1/g"`
-        IFMOD=`(cd "${WD}" && git status) | \
-                grep -q "modified:\|added:\|deleted:" && \
-                echo -n "M" || echo -n ""`
+        IFMOD=`(cd "${WD}" && git diff-index --quiet HEAD || echo -n 'M')`
         [ ! "${REV}" ] && REV=${HASH}${IFMOD}
       fi
     fi

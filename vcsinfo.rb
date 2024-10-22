@@ -145,8 +145,7 @@ module VCSInfo
       when :git
         rev_id = `(cd #{ds} && git describe --all --long)`.
                  chomp.gsub(/\A.*?-g([0-9a-z]+).*\Z/, '\1')
-        ifmod  = `(cd "${WD}" && git status)`.
-                 scan(/modified:|added:|deleted:/).empty? ? '' : 'M'
+        ifmod  = `(cd "${WD}" && git diff-index --quiet HEAD || echo -n 'M')`
         rev_id + ifmod
       when :hg
         `hg identify --id #{ds}`.chomp.gsub(/\+/, 'M')
